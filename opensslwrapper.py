@@ -23,6 +23,13 @@ def loadcertificates(fromfolder):
     return certs
 
 
+def export(cert, tofile, isprivate):
+    if isprivate:
+        tofile.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, cert.get_privatekey()))
+    else:
+        tofile.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert.get_certificate()))
+
+
 def _is_selfsigned(cert):
     return cert.get_certificate().get_issuer() == cert.get_certificate().get_subject()
 
@@ -55,41 +62,6 @@ def _is_issued_by(cert1, cert2):
     cert1_issuer = construct_subject_from_component(cert1.get_certificate().get_issuer().get_components())
     cert2_subject = construct_subject_from_component(cert2.get_certificate().get_subject().get_components())
     return cert1_issuer == cert2_subject
-
-#def construct_chain(pkcs12certs):
-#    """
-#        Accepts a dictionary with files and certificate objects in the form:
-#        {file: OpenSSL.crypto.PKCS12}
-#        Constructs and returns a list in the following form:
-#        [[(file1,cert1), (file2,cert2), (file3,cert3)], [(file21, cert21), (file21, cert21)]]
-#        where cert3 is signed by cert2, cert2 is signed by cert1, etc
-#    """
-#   remaining = pkcs12certs
-#   result = []
-#   while True:
-#    chain, remaining = _extract_single_chain(remaining)
-#    if chain:
-#        result.append(chain)
-#    if not remaining:
-#        return result
-
-
-#def _extract_single_chain(pkcs12certs):
-#    chain = []
-#    remaining = {}
-#    current_f, p12 = pkcs12certs.popitem()
-#    chain.append((current_f, p12))
-#    for (f, cert) in pkcs12certs.items():
-#        c = _get_issuer(p12, cert)
-#        if c:
-#            if cert == c[0]:
-#                chain.insert(0, (f, cert))
-#            else:
-#                chain.append((f, cert))
-#        else:
-#            remaining[f] = cert
-#
-#    return chain, remaining
 
 
 def _generateKeyPair(algorithm=crypto.TYPE_RSA, size=4096):
@@ -221,6 +193,13 @@ def _store_certs(destfolder, key, cert):
     open(os.path.join(destfolder, '%s.p12' % commonName), 'wb').write(p12.export(cert_password))
 
 
+def construct_subject_from_component(component):
+    subject = []
+    for v in component:
+        subject.append("=".join(v))
+    return ", ".join(subject)
+
+
 def main():
     #parser = optparse.OptionParser('usage %prog [Options]')
     #
@@ -276,13 +255,6 @@ def main():
     #    crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
     certs = loadcertificates("/home/makpoc/certs")
     print construct_chains(certs)
-
-
-def construct_subject_from_component(component):
-    subject = []
-    for v in component:
-        subject.append("=".join(v))
-    return ", ".join(subject)
 
 
 if __name__ == "__main__":

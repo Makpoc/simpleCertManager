@@ -1,4 +1,4 @@
 simpleCertManager
 =================
 
-beginner, do not take seriously :)
+beginner, do not take seriously :) (but comments are appreciated)

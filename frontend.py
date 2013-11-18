@@ -46,13 +46,17 @@ class simpeCertManagerGui(Tk):
         self.generateCertBtn = Button(self.rightframe, text="Generate certificate...", width=17,
                                       command=lambda: self.gen_new_cert(False))
         self.deleteCertBtn = Button(self.rightframe, text="Delete certificate...", width=17, command=self.deletecert)
-        self.exportCertBtn = Button(self.rightframe, text="Export as p12...", width=17, command=self._dummy)
+        self.exportPubCertBtn = Button(self.rightframe, text="Export public...", width=17,
+                                       command=lambda: self.export(False))
+        self.exportPrivCertBtn = Button(self.rightframe, text="Export private...", width=17,
+                                        command=lambda: self.export(True))
         self.detailsBtn = Button(self.rightframe, text="View Details...", width=17, command=self._dummy)
         self.generateCaBtn.grid(column=1, row=0, sticky=W)
         self.generateCertBtn.grid(column=1, row=1, sticky=W)
         self.deleteCertBtn.grid(column=1, row=2, sticky=W)
-        self.exportCertBtn.grid(column=1, row=3, sticky=W)
-        self.detailsBtn.grid(column=1, row=4, sticky=W)
+        self.exportPubCertBtn.grid(column=1, row=3, sticky=W)
+        self.exportPrivCertBtn.grid(column=1, row=4, sticky=W)
+        self.detailsBtn.grid(column=1, row=5, sticky=W)
         self.__toggle_buttons_state()
 
     def __init_tree(self):
@@ -68,11 +72,23 @@ class simpeCertManagerGui(Tk):
         self.tree.grid(padx=5, column=0, rowspan=4, sticky=NW)
 
     def __toggle_buttons_state(self):
-        self.exportCertBtn['state'] = self.generateCertBtn['state'] = self.deleteCertBtn['state'] = self.detailsBtn[
-            'state'] = 'normal' if self.tree.selection() else 'disabled'
+        self.exportPrivCertBtn['state'] = self.exportPubCertBtn['state'] = self.generateCertBtn['state'] \
+            = self.deleteCertBtn['state'] = self.detailsBtn['state'] = 'normal' if self.tree.selection() else 'disabled'
 
     def _dummy(self):
         pass
+
+    def export(self, asprivate):
+        selection = self.tree.item(self.tree.selection())['text']
+        default_file_name = selection[:selection.rfind(".")] + (".pem" if asprivate else ".crt")
+
+        cert = opensslwrapper.loadcertificate(
+            os.path.join(self.certlocation.get(), selection))
+
+        fd = tkFileDialog.asksaveasfile(mode='w', initialfile=default_file_name,
+                                        initialdir=self.certlocation.get())
+        if fd:
+            opensslwrapper.export(cert, fd, asprivate)
 
     def deletecert(self):
         try:
@@ -124,7 +140,7 @@ class simpeCertManagerGui(Tk):
 
     def _opendialog(self):
         self.certlocation.set(
-            tkFileDialog.askdirectory(parent=self.frame, title="Select certificate folder",
+            tkFileDialog.askdirectory(parent=self.frame, title="Select certificates folder",
                                       initialdir=expanduser('~')))
         self._updateTree()
 
