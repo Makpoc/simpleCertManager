@@ -1,5 +1,3 @@
-import certchain
-
 __author__ = 'makpoc'
 
 import os
@@ -127,10 +125,14 @@ def _generateCertRequest(pkey, digest="md5", **kwargs):
     subj = req.get_subject()
 
     if not "CN" in kwargs.keys():
+        print '[*] Creating certificate with generated CN.'
         kwargs["CN"] = "GeneratedCAName"
 
     for (key, value) in kwargs.items():
-        setattr(subj, key, value)
+        if key in ('C', 'ST', 'L', 'O', 'OU', 'CN', 'emailAddress'):
+            setattr(subj, key, value)
+        else:
+            print '[*] Attribute with key %s and value %s ignored' % (key, value)
 
     req.set_pubkey(pkey)
     req.sign(pkey, digest)

@@ -16,13 +16,12 @@ class simpeCertManagerGui(Tk):
         self.loadedcertificates = {}
         self.__init_main()
         self.__init_frames()
-        self.__init_browser()
         self.__init_tree()
+        self.__init_browser()
         self.__init_cert_management()
 
     def __init_main(self):
         self.geometry("+%d+%d" % (20, 20))
-
         self.grid()
         self.resizable(False, False)
 
@@ -43,9 +42,9 @@ class simpeCertManagerGui(Tk):
 
     def __init_cert_management(self):
         self.generateCaBtn = Button(self.rightframe, text="Generate CA...", width=17,
-                                    command=lambda: self.genNewCert(True))
+                                    command=lambda: self.gen_new_cert(True))
         self.generateCertBtn = Button(self.rightframe, text="Generate certificate...", width=17,
-                                      command=lambda: self.genNewCert(False))
+                                      command=lambda: self.gen_new_cert(False))
         self.deleteCertBtn = Button(self.rightframe, text="Delete certificate...", width=17, command=self.deletecert)
         self.exportCertBtn = Button(self.rightframe, text="Export as p12...", width=17, command=self._dummy)
         self.detailsBtn = Button(self.rightframe, text="View Details...", width=17, command=self._dummy)
@@ -83,7 +82,7 @@ class simpeCertManagerGui(Tk):
         self._updateTree()
         self.__toggle_buttons_state()
 
-    def genNewCert(self, isrootca):
+    def gen_new_cert(self, isrootca):
         dialog = Toplevel(self)
         dialog.geometry(
             "+%d+%d" % (self.winfo_x() + (self.winfo_width() / 4), self.winfo_y() + (self.winfo_height() / 4)))
